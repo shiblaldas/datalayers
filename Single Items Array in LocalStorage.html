@@ -1,0 +1,39 @@
+<script>
+  // Function to push data to local storage under 'ecommerce' item
+  function pushDataToLocalStorage() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        var items = {{ecommerce.items}}; // Replace this with dynamic insertion
+        var ecommerceParameters = {
+          items: items
+        };
+        localStorage.setItem('ecommerce', JSON.stringify(ecommerceParameters));
+      }
+    } catch (error) {
+      // Optional: handle errors
+    }
+  }
+
+  // Function to clear data from local storage after 10 seconds of a 'purchase' event
+  function clearLocalStorageOnPurchase() {
+    try {
+      if (typeof localStorage !== 'undefined' && Array.isArray(dataLayer)) {
+        for (var i = 0; i < dataLayer.length; i++) {
+          if (dataLayer[i].event === 'purchase') {
+            // Delay removal by 10 seconds (10000 ms)
+            setTimeout(function () {
+              localStorage.removeItem('ecommerce');
+            }, 10000);
+            break; // Exit loop after finding the purchase event
+          }
+        }
+      }
+    } catch (error) {
+      // Optional: handle errors
+    }
+  }
+
+  // Call functions on page load
+  pushDataToLocalStorage();
+  clearLocalStorageOnPurchase();
+</script>
