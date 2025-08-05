@@ -1,0 +1,69 @@
+<script>
+  // Function to push data to local storage under 'ecommerce' item
+  function pushDataToLocalStorage() {
+    try {
+      // Check if localStorage is supported by the browser
+      if (typeof localStorage !== 'undefined') {
+        // Your data
+        var item = {{item}};  // items object 
+
+        // Retrieve existing items from localStorage
+        var storedData = localStorage.getItem('ecommerce');
+        var storedItems = storedData ? JSON.parse(storedData).items : [];
+
+        // Add the current item to the existing items
+        storedItems.push(item);
+
+        // Create an object to store both values
+        var ecommerceParameters = {
+          items: storedItems
+        };
+
+        // Store the updated data object in local storage under 'ecommerce' item
+        localStorage.setItem('ecommerce', JSON.stringify(ecommerceParameters));
+      } else {
+        // Handle the case where local storage is not supported by the browser
+        // You can add alternative code or log an error message here if needed
+      }
+    } catch (error) {
+      // Handle any potential errors that may occur during the data push
+      // You can add error handling code here if needed
+    }
+  }
+
+  // Function to clear data from local storage after a delay when a 'create_order' event occurs
+  function clearLocalStorageOnPurchase() {
+    try {
+      // Check if localStorage is supported by the browser
+      if (typeof localStorage !== 'undefined') {
+        // Check if the 'purchase' event has occurred in the dataLayer
+        if (dataLayer && dataLayer.length > 0) {
+          for (var i = 0; i < dataLayer.length; i++) {
+            if (dataLayer[i].event === 'purchase') {
+              // Clear the 'ecommerce' item from local storage after a delay
+              setTimeout(function() {
+                localStorage.removeItem('ecommerce');
+              }, 10000); // 10 seconds delay
+              break; // Stop looping once 'create_order' event is found
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Handle any potential errors that may occur during the data clearing
+      // You can add error handling code here if needed
+    }
+  }
+
+  // Call the function to push data when the 'add to cart' event fires
+  // This assumes that the 'add to cart' event is tracked in the dataLayer
+  // Adjust the condition based on how 'add_to_cart' events are logged in your implementation
+  if (dataLayer && dataLayer.some(function(event) { return event.event === 'add_to_cart'; })) {
+    pushDataToLocalStorage();
+  }
+
+  // Call the function to clear data on page load
+  clearLocalStorageOnPurchase();
+</script>
+
+
