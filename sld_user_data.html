@@ -1,0 +1,89 @@
+<script>
+(function () {
+  function getUrlParam(param) {
+    var regex = new RegExp('[?&]' + param + '=([^&#]*)');
+    var results = regex.exec(window.location.href);
+    return results ? decodeURIComponent(results[1].replace(/\+/g, ' ')) : '';
+  }
+
+  function persistParam(paramName) {
+    var key = 'persist_' + paramName;
+    var value = getUrlParam(paramName);
+    if (value) {
+      localStorage.setItem(key, value);
+      return value;
+    }
+    return localStorage.getItem(key) || '';
+  }
+
+  function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return '';
+  }
+
+  function generateIds() {
+    var rand = Math.floor(100000000 + Math.random() * 900000000);
+    var timestampSec = Math.floor(Date.now() / 1000);
+    var timestampMin = Math.floor(Date.now() / 60000);
+    return {
+      userId: rand + '.' + timestampSec,
+      sessionId: '' + timestampMin
+    };
+  }
+
+  var now = Date.now();
+  var timeout = 30 * 60 * 1000; // 30 minutes
+  var userId = localStorage.getItem('sld_user_id');
+  var sessionId = localStorage.getItem('sld_session_id');
+  var sessionCount = parseInt(localStorage.getItem('sld_session_count') || '0', 10);
+  var lastActivity = parseInt(localStorage.getItem('sld_last_activity') || '0', 10);
+
+  if (!userId || !sessionId) {
+    var ids = generateIds();
+    userId = ids.userId;
+    sessionId = ids.sessionId;
+    sessionCount = 1;
+    localStorage.setItem('sld_user_id', userId);
+    localStorage.setItem('sld_session_id', sessionId);
+    localStorage.setItem('sld_session_count', sessionCount);
+  } else if (now - lastActivity > timeout) {
+    sessionCount += 1;
+    localStorage.setItem('sld_session_count', sessionCount);
+  }
+
+  localStorage.setItem('sld_last_activity', now);
+
+
+  var trackingData = {
+    event: 'sld_user_data',
+    user_id: userId,
+    session_id: sessionId,
+    session_count: sessionCount,
+    utm_source: persistParam('utm_source'),
+    utm_medium: persistParam('utm_medium'),
+    utm_campaign: persistParam('utm_campaign'),
+    utm_term: persistParam('utm_term'),
+    utm_content: persistParam('utm_content'),
+    gclid: persistParam('gclid'),
+    wbraid: persistParam('wbraid'),
+    gbraid: persistParam('gbraid'),
+    fbclid: persistParam('fbclid'),
+    fbp: getCookie('_fbp'),
+    referrer: document.referrer,
+    user_agent: navigator.userAgent,
+    hostname: window.location.hostname,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    localStorage.setItem('sld_tracking_data', JSON.stringify(trackingData));
+  } catch (e) {
+    // fallback if storage fails
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push(trackingData);
+})();
+</script>
